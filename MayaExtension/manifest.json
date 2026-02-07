@@ -11,6 +11,9 @@
     "https://localhost:8080/*",
     "*://mail.google.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "js": ["content.js"],
