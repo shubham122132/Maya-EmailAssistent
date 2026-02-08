@@ -16,22 +16,26 @@ function createAIButton() {
 
 //    Get Email Content (READ MODE)
 function getEmailContent() {
-    // READ MODE: opened email
     const bodies = document.querySelectorAll("div.a3s");
 
-    if (bodies.length > 0) {
-        const latest = bodies[bodies.length - 1];
+    if (!bodies.length) return "";
 
-        // Remove quoted replies
-        const quote = latest.querySelector(".gmail_quote");
-        if (quote) quote.remove();
+    const latest = bodies[bodies.length - 1];
 
-        const text = latest.innerText.trim();
-        return text.length > 0 ? text : "";
-    }
+    // Clone to avoid mutating Gmail UI
+    const clone = latest.cloneNode(true);
 
-    return "";
+    // Remove quoted replies
+    clone.querySelectorAll(".gmail_quote").forEach(q => q.remove());
+
+    // Remove signatures (common Gmail pattern)
+    clone.querySelectorAll(".gmail_signature").forEach(s => s.remove());
+
+    const text = clone.innerText.trim();
+
+    return text.length > 20 ? text : "";
 }
+
 
 
 

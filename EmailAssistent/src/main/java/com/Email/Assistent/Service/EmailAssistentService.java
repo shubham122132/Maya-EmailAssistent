@@ -3,64 +3,37 @@ package com.Email.Assistent.Service;
 import com.Email.Assistent.PayLoad.EmailRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import static org.springframework.ai.ollama.api.OllamaModel.CODELLAMA;
 
 @Service
-@RequiredArgsConstructor
 public class EmailAssistentService {
 
-    @Value("${gemini.api.path}")
-    private String geminiApiPath;
-    @Value("${gemini.api.key}")
-    private String geminiApiKey;
+    private final OllamaChatModel chatModel;
 
-    private final WebClient webClient;
+    public EmailAssistentService(OllamaChatModel chatModel) {
+        this.chatModel = chatModel;
+    }
 
-
-//    to check the value of url anf key
-//    public void test() {
-//        System.out.println(geminiApiKey);
-//        System.out.println(geminiApiUrl);
-//    }
 
     public String generateEmailReply(EmailRequest emailRequest){
         // Build the Prompt
         String prompt = buildPrompt(emailRequest);
-        //Craft a Request
-        Map<String,Object> requestBody = Map.of(
-                "contents",new Object[]{
-                        Map.of("parts",new Object[]{
-                            Map.of("text",prompt)
-                        })
-                }
-        );
+        ChatOptions options = ChatOptions.builder()
+                .model("llama3.1")
+                .temperature(0.4)
+                .build();
 
-        //do request and get response
-        String response = webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path(geminiApiPath)
-                        .queryParam("key", geminiApiKey)
-                        .build()
-                )
-                .header("Content-Type","application/json")
-                .bodyValue(requestBody)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, r ->
-                        r.bodyToMono(String.class)
-                                .flatMap(err -> Mono.error(new RuntimeException(err)))
-                )
-                .bodyToMono(String.class)
-                .block();
+        String response = chatModel.call(prompt);
 
-        //Extract and return the response
-        return extractResponseContent(response);
+        return response;
+
     }
 
     private String extractResponseContent(String response) {

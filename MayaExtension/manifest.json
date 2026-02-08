@@ -29,6 +29,7 @@
       }
     ],
   "action": {
-    "default_title": "Maya Personal Assistant"
+    "default_title": "Maya Personal Assistant",
+    "default_icon": "maya.png"
   }
 }
