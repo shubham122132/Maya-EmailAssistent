@@ -1,6 +1,6 @@
 # Maya - AI-Powered Email Assistant
 
-An intelligent email assistant that generates professional email replies using AI. Maya consists of a Java Spring Boot backend, a React frontend, and a Chrome browser extension for seamless Gmail integration.
+An intelligent email assistant that generates professional email replies using a configurable LLM backend (local Ollama or cloud providers). Maya includes a Java Spring Boot backend, a React frontend, and a Chrome extension for Gmail.
 
 ## Project Overview
 
@@ -22,14 +22,13 @@ Maya is a comprehensive email assistant solution with three main components:
 ## Tech Stack
 
 ### Backend
-- **Framework**: Spring Boot 3.5.10
-- **Language**: Java 21
-- **API**: Google Gemini API
-- **Build Tool**: Maven
+- **Framework**: Spring Boot
+- **Language**: Java (21 recomended)
+- **LLM**: Configurable — local Ollama (codellama)
+- **Build Tool**: Maven (use `mvn` or the included `mvnw`)
 - **Additional Libraries**:
-  - Spring WebFlux (reactive programming)
-  - Lombok (code generation)
-  - Spring Web
+   - Spring Web / Spring WebFlux
+   - Lombok
 
 ### Frontend
 - **Framework**: React 19.2.0
@@ -67,11 +66,11 @@ MayaEmailAssistent/
 
 ### Prerequisites
 
-- Java 21 or higher
-- Node.js 18+ and npm
-- Maven (or use the included mvnw wrapper)
-- Chrome browser (for browser extension)
-- Google Gemini API key
+- Java 17 or higher
+- Node.js 16+ and npm
+- Maven (or use the included `mvnw` wrapper)
+- Chrome browser (for the extension)
+- Optional: Ollama (for running a local LLM) or API keys for a cloud LLM provider
 
 ### Backend Setup
 
@@ -80,14 +79,24 @@ MayaEmailAssistent/
    cd EmailAssistent
    ```
 
-2. **Configure API credentials:**
-   - Copy `src/main/resources/application.example.properties` to `src/main/resources/application.properties`
-   - Add your Google Gemini API configuration:
-     ```properties
-     spring.application.name=Assistent
-     gemini.api.key=your-api-key-here
-     gemini.api.path=/path/to/gemini/api
-     ```
+2. **Configure LLM and other properties:**
+    - Copy `src/main/resources/application.example.properties` to `src/main/resources/application.properties`
+    - Configure the LLM backend. Examples:
+
+       - Local Ollama (recommended for local-only setups):
+          ```properties
+          # Use a local Ollama server
+          llm.provider=ollama
+          ollama.host=http://localhost:11434
+          ollama.model=llama2
+          ```
+
+       - Cloud provider (example keys — adapt to your provider):
+          ```properties
+          llm.provider=openai
+          openai.api.key=sk-xxxx
+          openai.model=gpt-4o
+          ```
 
 3. **Build the project:**
    ```bash
@@ -137,24 +146,24 @@ MayaEmailAssistent/
    - The extension will inject a Maya assistant button into Gmail compose pages
    - Make sure the backend server is running on `https://localhost:8080`
 
-## API Endpoints
+### API Endpoints
 
-### Email Generation
+#### Email Generation
 - **Endpoint**: `POST /api/email/generate`
-- **Description**: Generates an AI-powered email reply
+- **Description**: Generates an AI-powered email reply using the configured LLM
 - **Request Body**:
-  ```json
-  {
-    "emailContent": "Original email content here",
-    "tone": "professional"
-  }
-  ```
+   ```json
+   {
+      "emailContent": "Original email content here",
+      "tone": "professional"
+   }
+   ```
 - **Response**:
-  ```json
-  {
-    "reply": "Generated email reply text"
-  }
-  ```
+   ```json
+   {
+      "reply": "Generated email reply text"
+   }
+   ```
 
 ## Usage
 
@@ -179,13 +188,22 @@ MayaEmailAssistent/
 
 ### Backend Configuration
 
-Environment variables and properties can be set in `application.properties`:
+Environment variables and properties can be set in `application.properties`. Examples below show local Ollama and a cloud provider example.
 
 ```properties
+# General
 spring.application.name=Assistent
 server.port=8080
-gemini.api.key=your-gemini-api-key
-gemini.api.path=/v1/models/gemini-pro:generateContent
+
+# Local Ollama example
+llm.provider=ollama
+ollama.host=http://localhost:11434
+ollama.model=llama2
+
+# Cloud provider example
+llm.provider=openai
+openai.api.key=your-openai-key
+openai.model=gpt-4o
 ```
 
 ### Frontend Configuration
@@ -234,11 +252,11 @@ npm run lint
 
 ## Security Considerations
 
-- Store API keys securely and never commit them to version control
-- Use HTTPS in production environments
-- Implement proper authentication and authorization
-- Validate and sanitize email content before sending to the API
-- Consider rate limiting for API endpoints
+- Store API keys and credentials in environment variables or a secrets manager — never commit them
+- Use HTTPS in production and secure the Ollama endpoint if exposed externally
+- Implement authentication and authorization for the backend API
+- Validate and sanitize email content before sending to an LLM
+- Consider rate limiting and monitoring for API usage
 
 ## Future Enhancements
 
